@@ -1,26 +1,48 @@
-# EsArduino
+int sensorPin = 2;
+int TIP120pin = 9;
+unsigned long start_time = 0;
+unsigned long end_time = 0;
+int motstate = 0;
+int PWM;
+int steps = 0;
+float steps_old = 0;
+float temp = 0;
+float rps = 0;
+float rpm = 0;
 
-Es. Bottone:
-// C++ code
-//
-void setup()
-{
-  pinMode(2, INPUT);
-  pinMode(10, OUTPUT);
+void setup() {
+  Serial.begin(9600);
+  pinMode(sensorPin, INPUT);
 }
 
-void loop()
-{
-  // Se o botão estiver apertado:
-  if (digitalRead(2) == HIGH) {
-    // Ligue o LED.
-    digitalWrite(10, HIGH);
-    // Caso contrário,
-  } else {
-    // Desligue o LED.
-    digitalWrite(10, LOW);
+void loop() {
+PWM = analogRead(0);
+  motstate = map(PWM, 0, 1023, 0, 255);
+if (motstate < 25){
+motstate = 0;
+}
+analogWrite(TIP120pin, motstate);
+  start_time = millis();
+  end_time = start_time + 1000;
+
+  while (millis() < end_time)
+  {
+    if ((digitalRead(sensorPin)) == 1)
+    {
+      steps = steps + 1;
+      while (digitalRead(sensorPin) == 1);
+    }
   }
-  delay(10); // Delay a little bit to improve simulation performance
-}
 
-_______________________________________________________________________________________________________________________________________________________________________________________________________________________
+  temp = steps - steps_old;
+  steps_old = steps;
+  rps = (temp / 20);
+  rpm = (rps * 60);
+
+  Serial.print("rps = ");
+  Serial.print(rps);
+  Serial.print(", rpm = ");
+  Serial.println(rpm);
+
+  delay(1);
+}
